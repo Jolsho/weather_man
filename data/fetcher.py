@@ -39,7 +39,7 @@ month_ranges = generate_month_date_ranges(2019, 2021)
 """
 offset = 0
 ending = 5
-api_key = "e1f10a1e78da46f5b10a1e78da96f525"
+api_key = "NEED TO FILL THIS IN TO USE THIS SCRIPT"
 
 for i, s in enumerate(stations[offset:ending]):
     url = f"https://api.weather.com/v1/location/{s}{
