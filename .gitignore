@@ -1,0 +1,9 @@
+venv/
+json/
+Vegas/
+Henderson/
+Nellis/
+Kingman/
+IndianSprings/
+__pycache__/
+model.pth
