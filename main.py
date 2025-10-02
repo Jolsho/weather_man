@@ -226,12 +226,62 @@ def evaluate_model(model, loader, dataset, device, horizons=[1, 3, 6, 12, 24]):
         print(f"Horizon t+{h}: RMSE={rmse:.2f}, MAE={mae:.2f}, R²={r2:.3f}")
 
 
+def evaluate_baseline(dataset, horizons=[1, 3, 6, 12, 24]):
+    """
+    Baseline: predict future temp as yesterday's temp at the same hour.
+    """
+    y_true, y_pred = [], []
+
+    # Grab the target city temps (already scaled)
+    temps = dataset.y_all
+
+    for i in range(len(dataset)):
+        _, y_targets = dataset[i]  # ground truth temps (already aligned to horizons)
+
+        # Compute baseline: previous day's temps at same horizon offsets
+        # Here we assume hourly data
+        baseline_preds = []
+        for h in horizons:
+            prev_day_idx = i + dataset.seq_len + (h - 24)  # 24 hours before
+            if prev_day_idx < 0:
+                baseline_preds.append(np.nan)  # skip if not enough history
+            else:
+                baseline_preds.append(temps[prev_day_idx])
+        y_true.append(y_targets.numpy())
+        y_pred.append(np.array(baseline_preds))
+
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    # Drop rows with NaNs (early indices with no baseline available)
+    mask = ~np.isnan(y_pred).any(axis=1)
+    y_true, y_pred = y_true[mask], y_pred[mask]
+
+    # Inverse transform back to degrees
+    scaler = dataset.scalers[dataset.target_city_index]
+    for i, h in enumerate(horizons):
+        y_true_deg = inverse_transform_temp(scaler, y_true[:, i])
+        y_pred_deg = inverse_transform_temp(scaler, y_pred[:, i])
+
+        rmse = np.sqrt(mean_squared_error(y_true_deg, y_pred_deg))
+        mae = mean_absolute_error(y_true_deg, y_pred_deg)
+        r2 = r2_score(y_true_deg, y_pred_deg)
+
+        print(f"[Baseline] Horizon t+{h}: RMSE={rmse:.2f}, MAE={mae:.2f}, R²={r2:.3f}")
+
+
 # ---------------- Run Final Evaluation ----------------
-print("\nValidation performance:")
+print("\nValidation performance (model):")
 evaluate_model(model, val_loader, dataset, device)
 
-print("\nTest performance:")
+print("\nValidation performance (baseline):")
+evaluate_baseline(dataset)
+
+print("\nTest performance (model):")
 evaluate_model(model, test_loader, dataset, device)
+
+print("\nTest performance (baseline):")
+evaluate_baseline(dataset)
 
 # Example single prediction in degrees
 X_sample, y_true_sample = test_set[0]
