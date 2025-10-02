@@ -57,4 +57,4 @@ This was trained on three years of hourly averages. There are roughly 15 feature
 
 All the data was sourced from a wunderground.com. I essentially had to make a request in my browser, find the request in the network tab of dev-tools and copy the API key. Then I created an automated script which would use that api key and a predefined set of locations and years to fetch the data. At the end of this there are just a ton of json files, so I had to put those into dataframes, and clean them up. I was able to automate away missing entries, missing values in provided entries, and missalignments in time between locations. In the end of the json_to_csv.py script there are len(cities) files with hourly metrics for a total of 3 years.
 
-In all this weather_man is not very good, and is no where near useful accuracy. At the same time however it was built in 2 weeks with an a minimal dataset. Was a good learning experience though.
+In all this weather_man is not very good, and is no where near useful accuracy. At the same time however it was built in 2 weeks with a minimal dataset. Was a good learning experience though.
